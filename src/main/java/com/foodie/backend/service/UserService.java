@@ -1,11 +1,14 @@
 package com.foodie.backend.service;
 
 import com.foodie.backend.dto.UserDTO;
+import com.foodie.backend.dto.UserLoginDTO;
+import com.foodie.backend.dto.UserRegistrationDTO;
 
 import java.util.List;
 
 public interface UserService {
-    UserDTO registerUser(UserDTO userDto, String rawPassword);
+    UserDTO registerUser(UserRegistrationDTO registrationDto);
+    UserDTO loginUser(UserLoginDTO loginDto);
 
     UserDTO getUserById(String id);
     List<UserDTO> getAllUsers();

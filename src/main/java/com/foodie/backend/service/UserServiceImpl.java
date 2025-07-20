@@ -1,6 +1,8 @@
 package com.foodie.backend.service;
 
 import com.foodie.backend.dto.UserDTO;
+import com.foodie.backend.dto.UserLoginDTO;
+import com.foodie.backend.dto.UserRegistrationDTO;
 import com.foodie.backend.mapper.UserMapper;
 import com.foodie.backend.model.User;
 import com.foodie.backend.repository.UserRepository;
@@ -20,16 +22,25 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Override
-    public UserDTO registerUser(UserDTO userDTO, String rawPassword){
-        if(userRepository.existsByEmail(userDTO.getEmail())){
+    public UserDTO registerUser(UserRegistrationDTO userRegistrationDTO){
+        if(userRepository.existsByEmail(userRegistrationDTO.getEmail())){
             throw new RuntimeException("Email already in use");
         }
-        User user = userMapper.toEntity(userDTO);
-        user.setPassword(passwordEncoder.encode(rawPassword));
+        User user = userMapper.toEntity(userRegistrationDTO);
+        user.setPassword(passwordEncoder.encode(userRegistrationDTO.getPassword()));
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }
+    @Override
+    public UserDTO loginUser(UserLoginDTO userLoginDTO){
+        User user = userRepository.findByEmail(userLoginDTO.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid Credentials"));
+        if(!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())){
+            throw new RuntimeException("Invalid Credentials");
 
+        }
+        return userMapper.toDto(user);
+    }
     @Override
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id).
