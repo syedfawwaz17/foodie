@@ -21,7 +21,7 @@ public class Order {
     @DBRef
     private String restaurantId;
     private List<String> items;
-    private Double totalPrice;
+    private int totalPrice;
     private String status;
     private Data orderDate;
 
