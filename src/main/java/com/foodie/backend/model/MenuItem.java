@@ -1,16 +1,22 @@
-package com.foodie.backend.dto;
+package com.foodie.backend.model;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 
-public class MenuItemDTO {
+@Document(collection = "menu_items")
+public class MenuItem {
+
+    @Id
     private String id;
     private String name;
     private String description;
     private BigDecimal price;
     private String category;
-    private String restaurantId; // ✅ Add this field
+    private String restaurantId;
 
-    // Getters and Setters
+    // Getters & Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

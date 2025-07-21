@@ -19,11 +19,11 @@ public class Order {
     private String restaurantId;
 
     private List<String> items;
-    private BigDecimal totalPrice;
-    private OrderStatus status;
-    private LocalDateTime orderDate;
+    private BigDecimal totalPrice;  // FIXED: Changed from int to BigDecimal
+    private OrderStatus status;     // IMPROVED: Use enum instead of String
+    private LocalDateTime orderDate; // IMPROVED: Use LocalDateTime instead of Date
 
-
+    // getters and setters...
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getUserId() { return userId; }

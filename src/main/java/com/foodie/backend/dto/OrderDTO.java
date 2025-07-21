@@ -1,5 +1,8 @@
 package com.foodie.backend.dto;
 
+import com.foodie.backend.model.OrderStatus;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -41,19 +44,19 @@ public class OrderDTO {
         this.itemIds = itemIds;
     }
 
-    public int getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(int totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -65,8 +68,8 @@ public class OrderDTO {
         this.orderDate = orderDate;
     }
 
-    private int totalPrice;
-    private String status;
+    private BigDecimal totalPrice;
+    private OrderStatus status;
     private Date orderDate;
 
 

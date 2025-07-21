@@ -1,75 +1,79 @@
 package com.foodie.backend.controller;
 
-import com.foodie.backend.dto.UserDTO;
-import com.foodie.backend.dto.UserLoginDTO;
-import com.foodie.backend.dto.UserRegistrationDTO;
+import com.foodie.backend.dto.*;
 import com.foodie.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@Validated
 public class UserController {
 
     private final UserService userService;
 
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
-        // FIXED: Added @Valid annotation and specific return type
-        UserDTO userDTO = userService.registerUser(userRegistrationDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+    public ResponseEntity<AuthResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO registrationDto) {
+        AuthResponseDTO response = userService.registerUser(registrationDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> loginUser(@Valid @RequestBody UserLoginDTO loginDto) {
-        UserDTO userDTO = userService.loginUser(loginDto);
-        return ResponseEntity.ok(userDTO);
+    public ResponseEntity<AuthResponseDTO> loginUser(@Valid @RequestBody UserLoginDTO loginDto) {
+        AuthResponseDTO response = userService.loginUser(loginDto);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == @userRepository.findById(#id).orElseThrow().email)")
     public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
-        UserDTO userById = userService.getUserById(id);
-        return ResponseEntity.ok(userById);
+        UserDTO userDto = userService.getUserById(id);
+        return ResponseEntity.ok(userDto);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> allUsers = userService.getAllUsers();
-        return ResponseEntity.ok(allUsers);
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUserById(@PathVariable String id,
-                                                  @Valid @RequestBody UserDTO userDTO) {
-
-        UserDTO updatedUser = userService.updateUser(id, userDTO);
+    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == @userRepository.findById(#id).orElseThrow().email)")
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable String id,
+            @Valid @RequestBody UserDTO userDto) {
+        UserDTO updatedUser = userService.updateUser(id, userDto);
         return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable String id) {
-
+    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == @userRepository.findById(#id).orElseThrow().email)")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDTO> findByEmail(@PathVariable @Email String email) {
+    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == #email)")
+    public ResponseEntity<UserDTO> findByEmail(@PathVariable String email) {
+        UserDTO userDto = userService.findByEmail(email);
+        return ResponseEntity.ok(userDto);
+    }
 
-        UserDTO user = userService.findByEmail(email);
-        return ResponseEntity.ok(user);
+    @GetMapping("/exists/{email}")
+    public ResponseEntity<Boolean> existsByEmail(@PathVariable String email) {
+        boolean exists = userService.existsByEmail(email);
+        return ResponseEntity.ok(exists);
     }
 }

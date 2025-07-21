@@ -1,66 +1,45 @@
 package com.foodie.backend.mapper;
 
 import com.foodie.backend.dto.UserDTO;
-import com.foodie.backend.dto.UserLoginDTO;
 import com.foodie.backend.dto.UserRegistrationDTO;
+import com.foodie.backend.model.Role;
 import com.foodie.backend.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
-    public UserDTO toDto(User user){
+
+    public UserDTO toDto(User user) {
         if (user == null) return null;
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-
+        dto.setAddress(user.getAddress());
+        dto.setPhone(user.getPhone());
+        dto.setRole(user.getRole());
         return dto;
     }
 
-    public User toEntity(UserDTO dto){
-        if (dto == null ) return null;
+    public User toEntity(UserDTO dto) {
+        if (dto == null) return null;
         User user = new User();
         user.setId(dto.getId());
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
+        user.setAddress(dto.getAddress());
+        user.setPhone(dto.getPhone());
+        user.setRole(dto.getRole());
         return user;
-
     }
-    public User toEntity(UserRegistrationDTO regDto) {
-        if (regDto == null) return null;
+
+    public User toEntity(UserRegistrationDTO registrationDTO) {
+        if (registrationDTO == null) return null;
         User user = new User();
-        user.setName(regDto.getName());
-        user.setEmail(regDto.getEmail());
-        user.setPassword(regDto.getPassword());
+        user.setName(registrationDTO.getName());
+        user.setEmail(registrationDTO.getEmail());
+        user.setPassword(registrationDTO.getPassword());
+        user.setRole(Role.USER); // Default role
         return user;
-    }
-
-
-    public UserRegistrationDTO toRegistrationDto(User user) {
-        if (user == null) return null;
-        UserRegistrationDTO regDto = new UserRegistrationDTO();
-        regDto.setName(user.getName());
-        regDto.setEmail(user.getEmail());
-
-        return regDto;
-    }
-
-
-    public User toEntity(UserLoginDTO loginDto) {
-        if (loginDto == null) return null;
-        User user = new User();
-        user.setEmail(loginDto.getEmail());
-        user.setPassword(loginDto.getPassword());
-        return user;
-    }
-
-
-    public UserLoginDTO toLoginDto(User user) {
-        if (user == null) return null;
-        UserLoginDTO loginDto = new UserLoginDTO();
-        loginDto.setEmail(user.getEmail());
-
-        return loginDto;
     }
 }
