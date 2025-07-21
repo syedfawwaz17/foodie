@@ -20,7 +20,7 @@ public class MenuItemMapper {
         Menu menu = new Menu();
         menu.setId(menuItemDTO.getId());
         menu.setName(menuItemDTO.getName());
-        menu.setDescription(menu.getDescription());
+        menu.setDescription(menuItemDTO.getDescription());
         menu.setPrice(menuItemDTO.getPrice());
         menu.setRestaurantId(menuItemDTO.getRestaurantId());
         return menu;

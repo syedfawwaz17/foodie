@@ -4,7 +4,9 @@ import com.foodie.backend.dto.UserDTO;
 import com.foodie.backend.dto.UserLoginDTO;
 import com.foodie.backend.dto.UserRegistrationDTO;
 import com.foodie.backend.model.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserMapper {
     public UserDTO toDto(User user){
         if (user == null) return null;

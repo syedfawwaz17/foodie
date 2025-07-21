@@ -26,7 +26,7 @@ public class OrderMapper {
         if (orderDTO == null) return null;
         Order order = new Order();
         order.setId(orderDTO.getId());
-        order.setOrderDate((Data) orderDTO.getOrderDate());
+        order.setOrderDate((Date) orderDTO.getOrderDate());
         order.setStatus(orderDTO.getStatus());
         order.setUserId(orderDTO.getUserId());
         order.setRestaurantId(orderDTO.getRestaurantId());
