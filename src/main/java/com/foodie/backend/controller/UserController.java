@@ -35,8 +35,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == @userRepository.findById(#id).orElseThrow().email)")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isOwner(#id, authentication.principal.username)")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String id)
+ {
         UserDTO userDto = userService.getUserById(id);
         return ResponseEntity.ok(userDto);
     }
@@ -65,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/email/{email}")
-    @PreAuthorize("hasRole('ADMIN') or (authentication.principal.username == #email)")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isOwnerByEmail(#email, authentication.principal.username)")
     public ResponseEntity<UserDTO> findByEmail(@PathVariable String email) {
         UserDTO userDto = userService.findByEmail(email);
         return ResponseEntity.ok(userDto);

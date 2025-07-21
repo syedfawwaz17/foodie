@@ -51,7 +51,12 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
 
         // ✅ Set role using enum properly
-        user.setRole(Role.USER);
+        try {
+            Role selectedRole = Role.valueOf(registrationDto.getRole().toUpperCase());
+            user.setRole(selectedRole);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role. Must be ADMIN, USER or RESTAURANT_OWNER");
+        }
 
         User savedUser = userRepository.save(user);
         System.out.println("Saved user: " + savedUser); // Debug print
