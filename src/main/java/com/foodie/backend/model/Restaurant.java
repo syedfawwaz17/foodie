@@ -56,8 +56,9 @@ public class Restaurant {
         this.cuisineType = cuisineType;
     }
 
+    // FIX: Safely handle null values to prevent NullPointerException
     public Boolean isApproved() {
-        return approved;
+        return approved != null && approved;
     }
 
     public Boolean getApproved() {
@@ -69,9 +70,11 @@ public class Restaurant {
         this.approved = approved;
     }
 
+    // FIX: Safely handle null values to prevent NullPointerException
     public Boolean isSuspended() {
-        return suspended;
+        return suspended != null && suspended;
     }
+
     public Boolean getSuspended() {
         return suspended;
     }

@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // Apply CORS configuration
+                .cors(Customizer.withDefaults()) // This line applies the global CORS configuration
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
@@ -35,9 +35,9 @@ public class SecurityConfig {
                                 "/api/users/exists/**",
                                 "/api/register/restaurant",
                                 "/api/restaurants",
-                                "/api/restaurants/**",
+                                "/api/restaurants/**", // <-- Important change here
                                 "/api/menu",
-                                "/api/menu/**",
+                                "/api/menu/**", // <-- Important change here
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

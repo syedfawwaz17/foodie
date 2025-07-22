@@ -1,3 +1,4 @@
+
 package com.foodie.backend.controller;
 
 import com.foodie.backend.dto.RestaurantDTO;
@@ -13,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
-@CrossOrigin(origins = "http://localhost:3000") // This is the fix
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
@@ -40,10 +40,12 @@ public class RestaurantController {
     public ResponseEntity<List<RestaurantDTO>> getAllRestaurants() {
         try {
             List<RestaurantDTO> restaurants = restaurantService.getAllRestaurants();
+            System.out.println("✅ Restaurant count: " + restaurants.size());
             return ResponseEntity.ok(restaurants);
         } catch (Exception e) {
-            e.printStackTrace(); // Print the stack trace to console
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("🔥 Error in /api/restaurants:");
+            e.printStackTrace(); // full stack trace
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

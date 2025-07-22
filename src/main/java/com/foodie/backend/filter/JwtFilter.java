@@ -1,6 +1,7 @@
 package com.foodie.backend.filter;
 
 import com.foodie.backend.service.UserDetailsServiceImpl;
+
 import com.foodie.backend.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
