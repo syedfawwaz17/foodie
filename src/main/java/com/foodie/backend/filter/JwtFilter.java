@@ -14,10 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
-/**
- * Filters requests and verifies JWT token (except for whitelisted routes like /register and /login).
- */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -27,16 +25,28 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    private static final List<String> PUBLIC_URIS = List.of(
+            "/api/users/register",
+            "/api/users/login",
+            "/api/register/restaurant"
+    );
+
+    private boolean isPublicPath(String path) {
+        return PUBLIC_URIS.stream().anyMatch(path::startsWith);
+    }
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getServletPath();
+        String path = request.getRequestURI();
+        System.out.println("JWTFilter: path = " + request.getRequestURI());
 
-        // ✅ Public routes to skip filtering
-        if (path.equals("/api/users/register") || path.equals("/api/users/login")) {
+        // ✅ Skip JWT check for publicly allowed paths
+        if (isPublicPath(path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -45,7 +55,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
-        // ✅ Extract JWT token from header
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
@@ -57,18 +66,15 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        // ✅ Token is present and user not yet authenticated
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = userDetailsService.loadUserByUsername(username);
 
-            // ✅ Validate and set authentication
+            // ✅ Validate and set security context
             if (jwtUtil.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-
+                var authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

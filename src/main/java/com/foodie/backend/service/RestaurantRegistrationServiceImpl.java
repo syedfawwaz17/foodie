@@ -25,21 +25,23 @@ public class RestaurantRegistrationServiceImpl implements RestaurantRegistration
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public void registerRestaurant(RestaurantRegistrationDTO registrationDTO) {
-        // Create owner user
+    public void registerRestaurant(RestaurantRegistrationDTO dto) {
         User owner = new User();
-        owner.setEmail(registrationDTO.getOwnerEmail());
-        owner.setPassword(passwordEncoder.encode(registrationDTO.getOwnerPassword()));
+        owner.setEmail(dto.getOwnerEmail());
+        owner.setPassword(passwordEncoder.encode(dto.getOwnerPassword()));
         owner.setRole(Role.RESTAURANT_OWNER);
+        owner.setName(dto.getName()); // reuse restaurant name as default
+        owner.setAddress(dto.getAddress());
+        owner.setPhone("NA");
         User savedOwner = userRepository.save(owner);
 
-        // Create restaurant
         Restaurant restaurant = new Restaurant();
-        restaurant.setName(registrationDTO.getName());
-        restaurant.setAddress(registrationDTO.getAddress());
-        restaurant.setCuisineType(registrationDTO.getCuisineType());
+        restaurant.setName(dto.getName());
+        restaurant.setAddress(dto.getAddress());
+        restaurant.setCuisineType(dto.getCuisineType());
         restaurant.setOwnerId(savedOwner.getId());
-        restaurant.setApproved(false); // Needs admin approval
+        restaurant.setApproved(false);
         restaurantRepository.save(restaurant);
     }
+
 }

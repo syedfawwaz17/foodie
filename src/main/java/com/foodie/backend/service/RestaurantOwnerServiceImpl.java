@@ -3,8 +3,11 @@ package com.foodie.backend.service;
 import com.foodie.backend.dto.MenuItemDTO;
 import com.foodie.backend.dto.RestaurantDTO;
 import com.foodie.backend.exception.ResourceNotFoundException;
+import com.foodie.backend.mapper.MenuItemMapper;
 import com.foodie.backend.mapper.RestaurantMapper;
+import com.foodie.backend.model.MenuItem;
 import com.foodie.backend.model.Restaurant;
+import com.foodie.backend.repository.MenuItemRepository;
 import com.foodie.backend.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,11 +24,17 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
     private RestaurantRepository restaurantRepository;
 
     @Autowired
+    private MenuItemRepository menuItemRepository;
+
+    @Autowired
+    private MenuItemMapper menuItemMapper;
+
+    @Autowired
     private RestaurantMapper restaurantMapper;
 
     @Override
     public RestaurantDTO getMyRestaurant() {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String ownerId = getCurrentUserId();
         Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         return restaurantMapper.toDto(restaurant);
@@ -33,83 +42,79 @@ public class RestaurantOwnerServiceImpl implements RestaurantOwnerService {
 
     @Override
     public RestaurantDTO updateRestaurant(RestaurantDTO restaurantDTO) {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String ownerId = getCurrentUserId();
         Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
-
         restaurant.setName(restaurantDTO.getName());
-        restaurant.setAddress(restaurantDTO.getAddress());
         restaurant.setCuisineType(restaurantDTO.getCuisineType());
-
+        restaurant.setAddress(restaurantDTO.getAddress());
         return restaurantMapper.toDto(restaurantRepository.save(restaurant));
     }
 
     @Override
     public MenuItemDTO addMenuItem(MenuItemDTO menuItemDTO) {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String ownerId = getCurrentUserId();
         Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        Restaurant.MenuItem menuItem = new Restaurant.MenuItem();
-        menuItem.setId(UUID.randomUUID().toString());
-        menuItem.setName(menuItemDTO.getName());
-        menuItem.setDescription(menuItemDTO.getDescription());
-        menuItem.setPrice(menuItemDTO.getPrice());
-        menuItem.setCategory(menuItemDTO.getCategory());
+        if (Boolean.FALSE.equals(restaurant.getApproved()) || Boolean.TRUE.equals(restaurant.getSuspended())) {
+            throw new RuntimeException("Restaurant is not active");
+        }
 
-        restaurant.getMenuItems().add(menuItem);
-        restaurantRepository.save(restaurant);
-        menuItemDTO.setId(menuItem.getId());
-        return menuItemDTO;
+        menuItemDTO.setRestaurantId(restaurant.getId());
+        MenuItem savedItem = menuItemRepository.save(menuItemMapper.toEntity(menuItemDTO));
+        return menuItemMapper.toDto(savedItem);
     }
 
     @Override
     public MenuItemDTO updateMenuItem(String itemId, MenuItemDTO menuItemDTO) {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
-
-        Restaurant.MenuItem menuItem = restaurant.getMenuItems()
-                .stream()
-                .filter(item -> item.getId().equals(itemId))
-                .findFirst()
+        MenuItem existing = menuItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
 
-        menuItem.setName(menuItemDTO.getName());
-        menuItem.setDescription(menuItemDTO.getDescription());
-        menuItem.setPrice(menuItemDTO.getPrice());
-        menuItem.setCategory(menuItemDTO.getCategory());
+        String ownerId = getCurrentUserId();
+        Restaurant restaurant = restaurantRepository.findById(existing.getRestaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        restaurantRepository.save(restaurant);
-        return menuItemDTO;
+        if (!restaurant.getOwnerId().equals(ownerId))
+            throw new RuntimeException("Access denied");
+
+        existing.setName(menuItemDTO.getName());
+        existing.setDescription(menuItemDTO.getDescription());
+        existing.setPrice(menuItemDTO.getPrice());
+        existing.setCategory(menuItemDTO.getCategory());
+
+        MenuItem updated = menuItemRepository.save(existing);
+        return menuItemMapper.toDto(updated);
     }
 
     @Override
     public void removeMenuItem(String itemId) {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
+        MenuItem item = menuItemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
+
+        String ownerId = getCurrentUserId();
+        Restaurant restaurant = restaurantRepository.findById(item.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        restaurant.getMenuItems().removeIf(item -> item.getId().equals(itemId));
-        restaurantRepository.save(restaurant);
+        if (!restaurant.getOwnerId().equals(ownerId))
+            throw new RuntimeException("Access denied");
+
+        menuItemRepository.deleteById(itemId);
     }
 
     @Override
     public List<MenuItemDTO> getMenuItems() {
-        String ownerId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String ownerId = getCurrentUserId();
         Restaurant restaurant = restaurantRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        return restaurant.getMenuItems().stream()
-                .map(item -> {
-                    MenuItemDTO dto = new MenuItemDTO();
-                    dto.setId(item.getId());
-                    dto.setName(item.getName());
-                    dto.setDescription(item.getDescription());
-                    dto.setPrice(item.getPrice());
-                    dto.setCategory(item.getCategory());
-                    return dto;
-                })
+        return menuItemRepository.findByRestaurantId(restaurant.getId())
+                .stream()
+                .map(menuItemMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    private String getCurrentUserId() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

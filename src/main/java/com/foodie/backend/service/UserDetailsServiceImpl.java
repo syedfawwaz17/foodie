@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
+/**
+ * Custom service to load user details for Spring Security authentication.
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -24,7 +27,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole().name())  // ✅ FIXED HERE
+                .roles(user.getRole().name())  // Automatically adds ROLE_ prefix
                 .build();
     }
 }

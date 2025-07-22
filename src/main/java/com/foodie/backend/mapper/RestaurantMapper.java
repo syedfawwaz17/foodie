@@ -6,30 +6,25 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RestaurantMapper {
-
-    public RestaurantDTO toDto(Restaurant restaurant) {
-        if (restaurant == null) {
-            return null;
-        }
-
+    public RestaurantDTO toDto(Restaurant entity) {
         RestaurantDTO dto = new RestaurantDTO();
-        dto.setId(restaurant.getId());
-        dto.setName(restaurant.getName());
-        dto.setAddress(restaurant.getAddress());
-        dto.setCuisineType(restaurant.getCuisineType());
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setAddress(entity.getAddress());
+        dto.setCuisineType(entity.getCuisineType());
+        dto.setApproved(entity.isApproved()); // This is now safe
+        dto.setSuspended(entity.isSuspended());
         return dto;
     }
 
-    public Restaurant toEntity(RestaurantDTO restaurantDTO) {
-        if (restaurantDTO == null) {
-            return null;
-        }
-
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(restaurantDTO.getId());
-        restaurant.setName(restaurantDTO.getName());
-        restaurant.setAddress(restaurantDTO.getAddress());
-        restaurant.setCuisineType(restaurantDTO.getCuisineType());
-        return restaurant;
+    public Restaurant toEntity(RestaurantDTO dto) {
+        Restaurant entity = new Restaurant();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setAddress(dto.getAddress());
+        entity.setCuisineType(dto.getCuisineType());
+        entity.setApproved(Boolean.TRUE.equals(dto.getApproved()));
+        entity.setSuspended(Boolean.TRUE.equals(dto.getSuspended()));
+        return entity;
     }
 }

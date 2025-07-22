@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
+@CrossOrigin(origins = "http://localhost:3000") // This is the fix
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
@@ -37,9 +38,15 @@ public class RestaurantController {
 
     @GetMapping
     public ResponseEntity<List<RestaurantDTO>> getAllRestaurants() {
-        List<RestaurantDTO> restaurants = restaurantService.getAllRestaurants();
-        return ResponseEntity.ok(restaurants);
+        try {
+            List<RestaurantDTO> restaurants = restaurantService.getAllRestaurants();
+            return ResponseEntity.ok(restaurants);
+        } catch (Exception e) {
+            e.printStackTrace(); // Print the stack trace to console
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
